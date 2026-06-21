@@ -1,10 +1,10 @@
 package kr.adapterz.jpa_practice.service;
 
-import kr.adadpterz.springboot_project.dto.like.*;
-import kr.adadpterz.springboot_project.exception.NotFoundException;
-import kr.adadpterz.springboot_project.repository.LikeRepository;
-import kr.adadpterz.springboot_project.repository.PostRepository;
-import kr.adadpterz.springboot_project.repository.UserRepository;
+import kr.adapterz.jpa_practice.dto.like.*;
+import kr.adapterz.jpa_practice.exception.NotFoundException;
+import kr.adapterz.jpa_practice.repository.LikeRepository;
+import kr.adapterz.jpa_practice.repository.PostRepository;
+import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

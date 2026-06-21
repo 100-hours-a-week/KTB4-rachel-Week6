@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class PostResponseDto {
+public class PostUpdateResponseDto {
     private Long postId;
 
     private String title;
@@ -26,10 +26,10 @@ public class PostResponseDto {
 
     private List<CommentResponseDto> comments;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 
-    public PostResponseDto(Post post) {
+    public PostUpdateResponseDto(Post post) {
         this.postId = post.getPostId();
         this.title = post.getTitle();
         this.authorId = post.getAuthor().getUserId();
@@ -44,7 +44,7 @@ public class PostResponseDto {
         this.commentCount = post.getPostInfo().getCommentCount();
         // this.viewCount = post.getViewCount();
 
-        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
 
         this.comments = post.getComments().stream()
                 .map(comment -> new CommentResponseDto(comment))
@@ -52,3 +52,6 @@ public class PostResponseDto {
 
     }
 }
+
+
+

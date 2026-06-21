@@ -2,22 +2,26 @@ package kr.adapterz.jpa_practice.service;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
-import kr.adadpterz.springboot_project.dto.user.*;
-import kr.adadpterz.springboot_project.entity.User;
-import kr.adadpterz.springboot_project.exception.DuplicateException;
-import kr.adadpterz.springboot_project.exception.NotFoundException;
-import kr.adadpterz.springboot_project.exception.PasswordMismatchException;
-import kr.adadpterz.springboot_project.repository.UserRepository;
+
+import kr.adapterz.jpa_practice.dto.user.*;
+import kr.adapterz.jpa_practice.entity.User;
+import kr.adapterz.jpa_practice.exception.DuplicateException;
+import kr.adapterz.jpa_practice.exception.NotFoundException;
+import kr.adapterz.jpa_practice.exception.PasswordMismatchException;
+import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
 @Validated
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+
 
     public UserResponseDto createUser(UserRequestDto request){
 
@@ -69,6 +73,7 @@ public class UserService {
         return new UserUpdateResponseDto(user);
     }
 
+
     public UserResponseDto updatePassword(
             @Positive Long userId,
             @Valid PasswordUpdateRequestDto request
@@ -86,14 +91,17 @@ public class UserService {
     }
 
 
-
-
+    @Transactional
     public UserResponseDto deleteUser(Long userId) {
-        User user = userRepository.deleteUser(userId)
+        // 수정사항: 삭제하기 전에 먼저 user 조회 해야 한다.
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+
+        user.delete();
 
         return new UserResponseDto(user);
     }
+
 
     public UserResponseDto login(LoginRequestDto request) {
 

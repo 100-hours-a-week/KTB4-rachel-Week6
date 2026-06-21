@@ -1,13 +1,13 @@
 package kr.adapterz.jpa_practice.service;
 
-import kr.adadpterz.springboot_project.dto.comment.*;
-import kr.adadpterz.springboot_project.entity.Comment;
-import kr.adadpterz.springboot_project.entity.Post;
-import kr.adadpterz.springboot_project.entity.User;
-import kr.adadpterz.springboot_project.exception.NotFoundException;
-import kr.adadpterz.springboot_project.repository.CommentRepository;
-import kr.adadpterz.springboot_project.repository.PostRepository;
-import kr.adadpterz.springboot_project.repository.UserRepository;
+import kr.adapterz.jpa_practice.dto.comment.*;
+import kr.adapterz.jpa_practice.entity.Comment;
+import kr.adapterz.jpa_practice.entity.Post;
+import kr.adapterz.jpa_practice.entity.User;
+import kr.adapterz.jpa_practice.exception.NotFoundException;
+import kr.adapterz.jpa_practice.repository.CommentRepository;
+import kr.adapterz.jpa_practice.repository.PostRepository;
+import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +23,10 @@ public class CommentService {
     // getAllComment
     public CommentListResponseDto getAllComment(Long postId) {
 
-        // TODO: 여기서 postId를 검사할필요없긴하다.. postId가 없다면 controller 계층에서 이미 405 그런 메소드없다고 나올 것임 -> postId가 있다고 가정하고 조회
-        // List에 엔터티 Comment로 넣고 findall
-        List<Comment> comments = commentRepository.findAll(postId)
-                .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUNT"));
+
+        List<Comment> comments = post.getComments(); // 비어있으면?
 
         List<CommentResponseDto> dtoList = comments.stream()
                 .map(CommentResponseDto::new)
@@ -37,38 +37,46 @@ public class CommentService {
 
     public CommentCreateResponseDto createComment(Long postId, CommentRequestDto request) {
 
-        // 1. 컨트롤러 계층에서 postId가 있어야 service로 넘어오겟지만 한번더 검사
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("POST_NOT_FOUND")); // TODO: 예외 맞는지 검사
+                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
 
-        // 2. 가입한 유저가 댓글을 작성하는지 확인
         User author = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("")); // TODO: 예외 맞는지 검사
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 
         Comment comment = new Comment(
-                post,
+                request.getCommentContent(),
                 author,
-                request.getCommentContent()
+                post
         );
 
-        Comment savedComment = commentRepository.save(postId, comment);
+        Comment savedComment = commentRepository.save(comment);
         return new CommentCreateResponseDto(savedComment);
     }
 
 
     // updateComment
     public CommentUpdateResponseDto updateComment(Long postId, Long commentId, CommentRequestDto request) {
-        Comment comment = commentRepository.findById(postId, commentId)
+
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
+        // TODO: comment 레포지토리로 확인하는 것과 아래 코드랑 비교해봐야함
+//        if (!comment.getPost().getPostId().equals(postId)) {
+//            throw new NotFoundException("COMMENT_NOT_FOUND");
+//        }
+
         // 본인이 작성한 댓글만 업데이트 가능
-        if (!comment.getUser().getId().equals(request.getUserId())) {
+        if (!comment.getAuthor().getUserId().equals(request.getUserId())) {
             throw new IllegalArgumentException("NOT_AUTHORIZED_COMMENT_OWNER");
         }
 
-        comment.changeContent(request.getCommentContent());
+        // null 값 확인
+        if(request.getCommentContent() != null)
+        {
+            comment.changeContent(request.getCommentContent());
+        }
 
-        return new CommentUpdateResponseDto(comment);
+        return new CommentUpdateResponseDto(comment); // TODO: 성공시만 가능인데 reutrn이 되나?
     }
 
 
@@ -76,25 +84,17 @@ public class CommentService {
     public CommentDeleteResponseDto deleteComment(Long postId, Long commentId, CommentDeleteReqeustDto request) {
 
         // 글이 있는지 확인
-        Comment comment = commentRepository.findById(postId, commentId)
+        Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
-//        // 본인이 생성한 댓글만 삭제할 수 있음
-//        Comment comment = commentRepository.findById() // 아 Comment 레포지토리 다시 만들어야 하나. userId를 포함한 database가 아님..
-//
-//        if (request.getUserId().equals(...)){
-//            commentRepository.deleteComment(postId, commentId);
-//        }
-        if (!comment.getUser().getId().equals(request.getUserId())) { // 재미나이한테 도움받은 부분. 엔터티에서 getUser하고 getId 한 부분이 어설펐었음
+
+        // 본인이 생성한 댓글만 삭제할 수 있음
+        if (!comment.getAuthor().getUserId().equals(request.getUserId()))
+        {
             throw new IllegalArgumentException("NOT_AUTHORIZED_COMMENT_OWNER");
         }
 
-        Comment deletedComment = commentRepository.deleteComment(postId, commentId)
-                .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
+        commentRepository.delete(comment);
 
-        int remainCount = commentRepository.findAll(postId)
-                .map(List::size)
-                .orElse(0);
-
-        return new CommentDeleteResponseDto(deletedComment, remainCount);
+        return new CommentDeleteResponseDto(comment); // 삭제했는데 dto 객체로 보내져?
     }
 }

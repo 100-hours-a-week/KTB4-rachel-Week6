@@ -6,6 +6,8 @@ import lombok.Setter; // TODO: Setter는 직접적으로 사용하지말고 불�
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import kr.adapterz.jpa_practice.repository.CommentRepository;
+import kr.adapterz.jpa_practice.repository.LikeRepository;
 
 import kr.adapterz.jpa_practice.entity.Comment;
 
@@ -41,6 +43,9 @@ public class Post {
     @OneToOne(mappedBy = "post", cascade = CascadeType.PERSIST)
     private PostInfo postInfo;
 
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    private List<PostImage> postImages = new ArrayList<>();
+
     // TODO: 동기화 시점-서비스계층
     @Column(nullable = false, length = 10)
     private String nickname; // User랑 똑같은 @Column 적용해줘야하나요?
@@ -56,6 +61,7 @@ public class Post {
 
     protected Post() {}
 
+    // 이미지는 생성자에서 빼고 메소드만 따로 둔다
     public Post(String title, String content, User author) {
         this.nickname = author.getNickname(); //얘는 복사임
         this.author = author;// 외래키인데
@@ -67,5 +73,20 @@ public class Post {
 
         this.postInfo = new PostInfo(this); // 여기서 this가 post맞지?
     }
+
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void addPostImage(String url) {
+        PostImage image = new PostImage(url, this);
+        postImages.add(image);
+    }
+
 
 }

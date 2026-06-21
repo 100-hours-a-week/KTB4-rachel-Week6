@@ -1,70 +1,124 @@
 package kr.adapterz.jpa_practice.service;
 
-import kr.adadpterz.springboot_project.dto.post.*;
-import kr.adadpterz.springboot_project.entity.Post;
-import kr.adadpterz.springboot_project.entity.User;
-import kr.adadpterz.springboot_project.exception.*;
-import kr.adadpterz.springboot_project.repository.PostRepository;
-import kr.adadpterz.springboot_project.repository.UserRepository;
+import kr.adapterz.jpa_practice.dto.post.*;
+import kr.adapterz.jpa_practice.dto.user.UserResponseDto;
+import kr.adapterz.jpa_practice.entity.Comment;
+import kr.adapterz.jpa_practice.entity.Post;
+import kr.adapterz.jpa_practice.entity.PostImage;
+import kr.adapterz.jpa_practice.entity.User;
+import kr.adapterz.jpa_practice.entity.Like;
+import kr.adapterz.jpa_practice.exception.*;
+import kr.adapterz.jpa_practice.repository.CommentRepository;
+import kr.adapterz.jpa_practice.repository.LikeRepository;
+import kr.adapterz.jpa_practice.repository.PostRepository;
+import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class PostService {
 
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
+    private final LikeRepository likeRepository;
 
-
+    @Transactional
     public PostResponseDto createPost(Long userId, PostRequestDto request) { // TODO: 언제 userId를 주고 받는걸까
 
         User author = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("USER_NOT_FOUND"));
+                .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 
         Post post = new Post(
                 request.getTitle(),
                 request.getContent(),
-                request.getImage(),
                 author
         );
 
+        // 게시글에 이미지를 첨부하였을 경우
+        if(!request.getImages().isEmpty()) { //TODO: 개별 이미지 당 null 확인해줘야함
+            for (String url: request.getImages())
+            {
+                if(url != null) post.addPostImage(url);
+            }
+        }
+
         Post savedPost = postRepository.save(post);
+
         return new PostResponseDto(savedPost);
     }
 
 
-    public PostResponseDto getPost(Long postId) {
+
+    public PostUpdateResponseDto getPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
-        return new PostResponseDto(post);
+        return new PostUpdateResponseDto(post);
     }
 
-    public List<PostResponseDto> getAllPost() {
+
+    public List<PostUpdateResponseDto> getAllPost() {
         List<Post> posts = postRepository.findAll(); // TODO: 전체 조회
 
         return posts.stream()
-                .map(post -> new PostResponseDto(post))
+                .map(post -> new PostUpdateResponseDto(post))
                 .collect(Collectors.toList());
     }
 
-    public PostResponseDto updatePost(Long postId, PostRequestDto request) {
+
+    @Transactional
+    public PostUpdateResponseDto updatePost(Long postId, PostRequestDto request) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
-;
-        post.changeTitle(request.getTitle());
-        post.changeContent(request.getContent());
-        post.changeImage(request.getImage());
 
-        return new PostResponseDto(post);
+
+        // 제목, 내용 업데이트할때 null 값 확인하는 코드 추가
+        if (request.getTitle() != null) post.changeTitle(request.getTitle());
+        if (request.getContent() != null) post.changeContent(request.getContent());
+
+//        if(!request.getImages().isEmpty()) // 특정 원하는 이미지만 어떻게 수정해여하지
+//        {
+//
+//        }
+
+
+
+        return new PostUpdateResponseDto(post);
     }
 
 
+    @Transactional
     public void deletePost(Long postId) {
-        postRepository.deletePost(postId);
+
+        // 먼저 Post 자체가 있는지 확인하는 구문 추가
+        Post post = postRepository.findById(postId)
+                        .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
+
+        // 연관된 댓글과 좋아요도 지우기
+        if (post.getComments() != null) // 리스트가 비어있지않으면
+        {
+            for(Comment comment: post.getComments())
+            {
+                commentRepository.delete(comment);
+            }
+        }
+
+        if(post.getLikes() != null)
+        {
+            for(Like like : post.getLikes())
+            {
+                likeRepository.delete(like);
+            }
+        }
+
+        postRepository.delete(post);
+
     }
 
 

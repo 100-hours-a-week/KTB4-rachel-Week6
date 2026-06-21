@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
-public class PostResponseDto {
+public class PostUpdateRequestDto {
     private Long postId;
 
     private String title;
     private String content;
-    private List<String> images;
+    private List<String> images; // 특정 몇번째 이미지인지 어케 알지..
     private Long authorId;
     private String nickname;
     private int likeCount; // 좋아요수
@@ -26,10 +26,10 @@ public class PostResponseDto {
 
     private List<CommentResponseDto> comments;
 
-    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
 
-    public PostResponseDto(Post post) {
+    public PostUpdateRequestDto(Post post) {
         this.postId = post.getPostId();
         this.title = post.getTitle();
         this.authorId = post.getAuthor().getUserId();
@@ -44,7 +44,7 @@ public class PostResponseDto {
         this.commentCount = post.getPostInfo().getCommentCount();
         // this.viewCount = post.getViewCount();
 
-        this.createdAt = post.getCreatedAt();
+        this.updatedAt = post.getUpdatedAt();
 
         this.comments = post.getComments().stream()
                 .map(comment -> new CommentResponseDto(comment))
@@ -52,3 +52,6 @@ public class PostResponseDto {
 
     }
 }
+
+
+

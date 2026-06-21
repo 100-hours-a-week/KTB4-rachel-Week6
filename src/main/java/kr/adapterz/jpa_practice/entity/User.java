@@ -73,8 +73,20 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    public void ChangeNickname(String nickname) {
+    public void changeNickname(String nickname) {
         this.nickname = nickname;
     }
 
+    public void changeProfileImage(String profileImage) {
+
+        this.profileImage = profileImage;
+    }
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
+
+    public void delete() {
+        this.deletedAt = LocalDateTime.now();
+    }
 }
