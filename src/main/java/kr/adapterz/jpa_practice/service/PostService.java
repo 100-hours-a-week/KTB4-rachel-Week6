@@ -59,14 +59,19 @@ public class PostService {
     public PostUpdateResponseDto getPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
+
+        post.checkAndUpdateNickname();
+
         return new PostUpdateResponseDto(post);
     }
 
 
+    @Transactional
     public List<PostUpdateResponseDto> getAllPost() {
         List<Post> posts = postRepository.findAll(); // TODO: 전체 조회
 
         return posts.stream()
+                .peek(post -> post.checkAndUpdateNickname())
                 .map(post -> new PostUpdateResponseDto(post))
                 .collect(Collectors.toList());
     }

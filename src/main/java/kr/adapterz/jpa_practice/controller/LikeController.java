@@ -1,6 +1,7 @@
 package kr.adapterz.jpa_practice.controller;
 
-import kr.adapterz.jpa_practice.dto.like.LikeGetResponseDto;
+import kr.adapterz.jpa_practice.dto.like.GetLikeInfoResponseDto;
+import kr.adapterz.jpa_practice.dto.like.LikeResponseDto;
 import kr.adapterz.jpa_practice.dto.like.LikeRequestDto;
 import kr.adapterz.jpa_practice.dto.like.LikeResponseDto;
 import kr.adapterz.jpa_practice.response.ApiResponse;
@@ -17,10 +18,10 @@ public class LikeController {
     private final LikeService likeService;
 
     @GetMapping("/likes")
-    public ResponseEntity<ApiResponse<LikeGetResponseDto>> getLikes(
+    public ResponseEntity<ApiResponse<GetLikeInfoResponseDto>> getLikes(
             @PathVariable Long postId
     ) {
-        LikeGetResponseDto result = likeService.getLikeInfo(postId);
+        GetLikeInfoResponseDto result = likeService.getLikeInfo(postId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.of("LIKE_RETRIVER", result, null));
     }
 

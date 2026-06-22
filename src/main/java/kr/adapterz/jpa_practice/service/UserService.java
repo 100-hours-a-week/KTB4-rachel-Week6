@@ -23,6 +23,7 @@ public class UserService {
     private final UserRepository userRepository;
 
 
+    @Transactional
     public UserResponseDto createUser(UserRequestDto request){
 
         // 비밀번호 확인 로직
@@ -59,6 +60,7 @@ public class UserService {
     }
 
 
+    @Transactional
     public UserUpdateResponseDto updateUserInfo(
             @Positive Long userId, // @Positive는 userId가 0보다 큰 값인지를 검증
             @Valid UserUpdateRequestDto request
@@ -70,10 +72,14 @@ public class UserService {
         user.changeProfileImage(request.getProfileImage());
         user.changeNickname(request.getNickname());
 
+        //TODO: nickname은 반정규화. 동기화 시켜야줘야 한다.
+        // user 엔티티에서는 nickname이 변경됨. 근데 연관관계인 Post, Comment에는 복사해서 사용하였다. 이때 동기화 로직이 필요하다.
+
         return new UserUpdateResponseDto(user);
     }
 
 
+    @Transactional
     public UserResponseDto updatePassword(
             @Positive Long userId,
             @Valid PasswordUpdateRequestDto request

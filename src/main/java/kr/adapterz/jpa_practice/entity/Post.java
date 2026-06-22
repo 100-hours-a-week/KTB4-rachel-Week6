@@ -40,7 +40,7 @@ public class Post {
     @OneToMany(mappedBy = "post")
     private List<Like> likes = new ArrayList<>();
 
-    @OneToOne(mappedBy = "post", cascade = CascadeType.PERSIST)
+    @OneToOne(mappedBy = "post", cascade = CascadeType.ALL)
     private PostInfo postInfo;
 
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
@@ -71,7 +71,7 @@ public class Post {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
 
-        this.postInfo = new PostInfo(this); // 여기서 this가 post맞지?
+        // this.postInfo = new PostInfo(this); // 프록시로 만들어질거라 따로 생성자에 넣을 필요없음.
     }
 
 
@@ -88,5 +88,12 @@ public class Post {
         postImages.add(image);
     }
 
+    // 닉네임 동기화 메소드
+    public void checkAndUpdateNickname(){
+        if(!this.nickname.equals(this.author.getNickname())) // 확인했는데 원래 저장했던 닉네임이랑 현재 User 엔티티가 가진 닉네임이랑 다르면 업데이트해라
+        {
+            this.nickname = this.author.getNickname();
+        }
+    }
 
 }

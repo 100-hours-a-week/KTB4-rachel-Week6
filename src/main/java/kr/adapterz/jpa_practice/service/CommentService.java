@@ -10,31 +10,19 @@ import kr.adapterz.jpa_practice.repository.PostRepository;
 import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CommentService {
     private final CommentRepository commentRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
 
-    // getAllComment
-    public CommentListResponseDto getAllComment(Long postId) {
-
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUNT"));
-
-        List<Comment> comments = post.getComments(); // 비어있으면?
-
-        List<CommentResponseDto> dtoList = comments.stream()
-                .map(CommentResponseDto::new)
-                .toList();
-
-        return new CommentListResponseDto(dtoList, postId);
-    }
-
+    @Transactional
     public CommentCreateResponseDto createComment(Long postId, CommentRequestDto request) {
 
         Post post = postRepository.findById(postId)
@@ -54,29 +42,46 @@ public class CommentService {
     }
 
 
+    // getAllComment
+    @Transactional
+    public CommentListResponseDto getAllComment(Long postId) {
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUNT"));
+
+        List<Comment> comments = post.getComments();
+
+        List<CommentResponseDto> dtoList = comments.stream()
+                .peek(comment -> comment.checkAndUpdateNickname())
+                .map(comment -> new CommentResponseDto(comment))
+                .toList();
+
+        return new CommentListResponseDto(dtoList, postId);
+    }
+
+
     // updateComment
+    @Transactional
     public CommentUpdateResponseDto updateComment(Long postId, Long commentId, CommentRequestDto request) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
-        // TODO: comment 레포지토리로 확인하는 것과 아래 코드랑 비교해봐야함
-//        if (!comment.getPost().getPostId().equals(postId)) {
-//            throw new NotFoundException("COMMENT_NOT_FOUND");
-//        }
 
         // 본인이 작성한 댓글만 업데이트 가능
         if (!comment.getAuthor().getUserId().equals(request.getUserId())) {
             throw new IllegalArgumentException("NOT_AUTHORIZED_COMMENT_OWNER");
         }
 
-        // null 값 확인
+
+        // null 값 확인하고 업데이트 - 근데 if문 true일때만 업데이트 되는데 이럼?
         if(request.getCommentContent() != null)
         {
+            comment.checkAndUpdateNickname();
             comment.changeContent(request.getCommentContent());
         }
 
-        return new CommentUpdateResponseDto(comment); // TODO: 성공시만 가능인데 reutrn이 되나?
+        return new CommentUpdateResponseDto(comment);
     }
 
 

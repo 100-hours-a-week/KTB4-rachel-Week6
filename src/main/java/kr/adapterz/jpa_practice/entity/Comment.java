@@ -58,4 +58,11 @@ public class Comment {
         this.commentContent = commentContent;
     }
 
+    public void checkAndUpdateNickname() {
+        if(!this.nickname.equals(this.author.getNickname()))
+        {
+            this.nickname = this.author.getNickname();
+        }
+    }
+
 }
