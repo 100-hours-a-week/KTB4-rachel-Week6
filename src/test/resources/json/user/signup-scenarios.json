@@ -1,0 +1,31 @@
+{
+  "normal": {
+    "email": "test@example.com",
+    "password": "Password123!",
+    "passwordCheck": "Password123!",
+    "nickname": "테스터",
+    "profileImage": "default.png"
+  },
+  "password_mismatch": {
+    "email": "test@example.com",
+    "password": "Password123!",
+    "passwordCheck": "WrongPassword!!!",
+    "nickname": "테스터",
+    "profileImage": "default.png"
+  },
+  "duplicate_email": {
+    "email": "duplicate@example.com",
+    "password": "Password123!",
+    "passwordCheck": "Password123!",
+    "nickname": "테스터",
+    "profileImage": "default.png"
+  },
+  "duplicate_nickname": {
+    "email": "new-email@example.com",
+    "password": "Password123!",
+    "passwordCheck": "Password123!",
+    "nickname": "테스터",
+    "profileImage": "default.png"
+  }
+
+}

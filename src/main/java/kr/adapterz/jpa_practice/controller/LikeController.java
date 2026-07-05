@@ -11,8 +11,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
-@RequestMapping("posts/{postId}")
+@RequestMapping("/posts/{postId}")
 @RequiredArgsConstructor
 public class LikeController {
     private final LikeService likeService;
@@ -38,9 +40,10 @@ public class LikeController {
     @DeleteMapping("/{userId}/likes")
     public ResponseEntity<ApiResponse<LikeResponseDto>> deleteLike(
             @PathVariable Long postId,
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @RequestBody LikeRequestDto request
     ) {
-        LikeResponseDto result = likeService.cancelLike(postId, userId);
+        LikeResponseDto result = likeService.cancelLike(postId, userId, request);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.of("LIKE_DELETE", result, null));
     }
 }

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -38,14 +39,14 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateNickname(
+    public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateNicknameProfileImg(
             @PathVariable Long userId,
             @Valid @RequestBody UserUpdateRequestDto request
     ) {
         UserUpdateResponseDto result = userService.updateUserInfo(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of("NICKNAME_UPDATED", result,null));
+                .body(ApiResponse.of("NICKNAME_IMAGE_UPDATED", result,null));
     }
 
     @PutMapping("/{userId}/password")
@@ -60,10 +61,10 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserResponseDto>> getUser(
+    public ResponseEntity<ApiResponse<UserAllResponseDto>> getUser(
             @PathVariable Long userId
     ) {
-        UserResponseDto result = userService.getUser(userId);
+        UserAllResponseDto result = userService.getUser(userId);
         return ResponseEntity.ok(
                 ApiResponse.of("USER_RETRIEVED", result)
         );

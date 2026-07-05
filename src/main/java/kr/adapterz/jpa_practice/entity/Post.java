@@ -71,9 +71,17 @@ public class Post {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
 
-        // this.postInfo = new PostInfo(this); // 프록시로 만들어질거라 따로 생성자에 넣을 필요없음.
+        this.LinkPostInfo(new PostInfo(this)); // 프록시로 만들어질거라 따로 생성자에 넣을 필요없음. 데이터를 데이터베이스에 처음 저장(Insert)할 때는 개발자가 직접 객체를 생성해서 관계를 맺어주어야 합니다
     }
 
+    public void LinkPostInfo(PostInfo postInfo) {
+        this.postInfo = postInfo;
+
+        // 만약 서로 연관되어 있지 않다면
+        if (postInfo.getPost() != this) {
+            postInfo.setPost(this); // 둘을 연관지어라.
+        }
+    }
 
     public void changeTitle(String title) {
         this.title = title;

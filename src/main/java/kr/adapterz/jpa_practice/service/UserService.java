@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Validated
-@RequiredArgsConstructor
+@RequiredArgsConstructor // 생성자 자동 생성
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
@@ -27,19 +27,20 @@ public class UserService {
     public UserResponseDto createUser(UserRequestDto request){
 
         // 비밀번호 확인 로직
-        if (!request.getPassword().equals(request.getPasswordCheck())) { // TODO: 비밀번호 확인하는 메서드 만들어야 하나? - 굳이.. 회원가입할때, 변경할때만 if문 이용하므로. 그치만 따로 뺀다면 어떻게 빼야하지?
+        if (!request.getPassword().equals(request.getPasswordCheck())) {
             throw new PasswordMismatchException("PASSWORD_MISMATCH");
         }
 
         // 이메일 중복 검사
-        if(userRepository.findByEmail(request.getEmail()).isPresent()) {// 이미 있는 이메일이라면
+        if(userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new DuplicateException("EMAIL_ALREADY_EXISTS");
         }
 
         // 닉네임 중복 검사
-        if(userRepository.findByNickname(request.getNickname()).isPresent()) {// 이미 있는 이메일이라면
+        if(userRepository.findByNickname(request.getNickname()).isPresent()) {
             throw new DuplicateException("NickName_ALREADY_EXISTS");
         }
+
 
         User user = new User(
                 request.getEmail(),
@@ -53,10 +54,10 @@ public class UserService {
     }
 
 
-    public UserResponseDto getUser(Long userId) {
+    public UserAllResponseDto getUser(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
-        return new UserResponseDto(user);
+        return new UserAllResponseDto(user);
     }
 
 
@@ -68,6 +69,11 @@ public class UserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 
+        // 중복 이메일 방지
+        userRepository.findByNickname(request.getNickname())
+                .ifPresent(existingUser -> {
+                    throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+                });
 
         user.changeProfileImage(request.getProfileImage());
         user.changeNickname(request.getNickname());

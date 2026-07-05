@@ -3,7 +3,9 @@ package kr.adapterz.jpa_practice.controller;
 import jakarta.validation.Valid;
 import kr.adapterz.jpa_practice.dto.post.PostRequestDto;
 import kr.adapterz.jpa_practice.dto.post.PostResponseDto;
+import kr.adapterz.jpa_practice.dto.post.AllPostsResponseDto;
 import kr.adapterz.jpa_practice.dto.post.PostUpdateResponseDto;
+import kr.adapterz.jpa_practice.dto.post.PostDeleteRequestDto;
 import kr.adapterz.jpa_practice.response.ApiResponse;
 import kr.adapterz.jpa_practice.service.PostService;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
+@CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
@@ -21,18 +25,18 @@ public class PostController {
     private final PostService postService;
 
     @GetMapping("")
-    public ResponseEntity<ApiResponse<List<PostUpdateResponseDto>>> getAllPost () {
-        List<PostUpdateResponseDto> result = postService.getAllPost(); // TODO: 전체 조회
+    public ResponseEntity<ApiResponse<List<AllPostsResponseDto>>> getAllPost () {
+        List<AllPostsResponseDto> result = postService.getAllPost(); // TODO: 전체 조회
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of("POSTS_RETRIEVED",result, null));
     }
 
     @GetMapping("/{postId}")
-    public ResponseEntity<ApiResponse<PostUpdateResponseDto>> getPost (
+    public ResponseEntity<ApiResponse<PostResponseDto>> getPost (
             @PathVariable Long postId
     ) {
-        PostUpdateResponseDto result = postService.getPost(postId);
+        PostResponseDto result = postService.getPost(postId);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .header("Location", "/users" + result.getPostId())
@@ -63,8 +67,10 @@ public class PostController {
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<ApiResponse<Void>> deletePost(@PathVariable Long postId) {
-        postService.deletePost(postId);
+    public ResponseEntity<ApiResponse<Void>> deletePost(
+            @PathVariable Long postId,
+            @Valid @RequestBody PostDeleteRequestDto request) {
+        postService.deletePost(postId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of("POST_DELETED", null));

@@ -2,6 +2,7 @@ package kr.adapterz.jpa_practice.dto.post;
 
 import kr.adapterz.jpa_practice.dto.comment.CommentResponseDto;
 import kr.adapterz.jpa_practice.entity.Post;
+import kr.adapterz.jpa_practice.entity.PostInfo;
 import kr.adapterz.jpa_practice.entity.PostImage;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

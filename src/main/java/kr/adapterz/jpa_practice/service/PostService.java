@@ -56,23 +56,23 @@ public class PostService {
 
 
 
-    public PostUpdateResponseDto getPost(Long postId) {
+    public PostResponseDto getPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
 
         post.checkAndUpdateNickname();
 
-        return new PostUpdateResponseDto(post);
+        return new PostResponseDto(post);
     }
 
 
     @Transactional
-    public List<PostUpdateResponseDto> getAllPost() {
-        List<Post> posts = postRepository.findAll(); // TODO: 전체 조회
+    public List<AllPostsResponseDto> getAllPost() {
+        List<Post> posts = postRepository.findAll();
 
         return posts.stream()
                 .peek(post -> post.checkAndUpdateNickname())
-                .map(post -> new PostUpdateResponseDto(post))
+                .map(post -> new AllPostsResponseDto(post))
                 .collect(Collectors.toList());
     }
 
@@ -99,11 +99,17 @@ public class PostService {
 
 
     @Transactional
-    public void deletePost(Long postId) {
+    public void deletePost(Long postId, PostDeleteRequestDto request) {
 
         // 먼저 Post 자체가 있는지 확인하는 구문 추가
         Post post = postRepository.findById(postId)
                         .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
+
+        //현재 삭제를 시도한 유저(request로 들어온 UserId = login한 유저)가 작성자인지 체크
+        if (!request.getUserId().equals(post.getAuthor().getUserId())) {
+            throw new AccessDeniedException("POST_DELETE_NOT_ALLOWED");
+        }
+
 
         // 연관된 댓글과 좋아요도 지우기
         if (post.getComments() != null) // 리스트가 비어있지않으면
@@ -121,6 +127,8 @@ public class PostService {
                 likeRepository.delete(like);
             }
         }
+
+        //TODO: 조회수도 지우기 나중에 채울것.
 
         postRepository.delete(post);
 
