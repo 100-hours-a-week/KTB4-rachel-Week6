@@ -2,6 +2,7 @@ package kr.adapterz.jpa_practice.controller;
 
 import jakarta.validation.Valid;
 import kr.adapterz.jpa_practice.dto.user.*;
+import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.response.ApiResponse;
 import kr.adapterz.jpa_practice.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://127.0.0.1:5500")
+
+// @CrossOrigin(origins = "http://127.0.0.1:5500")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -32,10 +34,11 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserResponseDto>> login (
             @Valid @RequestBody LoginRequestDto request
     ) {
-        UserResponseDto result = userService.login(request);
+        TokenResponseDto tokenResult = userService.login(request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of("LOGIN_SUCCESS", result, null));
+                .header("Authorization", tokenResult.getGrantType() + " " + tokenResult.getAccessToken())
+                .body(ApiResponse.of("LOGIN_SUCCESS", tokenResult.getUserInfo(), null));
     }
 
     @PatchMapping("/{userId}")

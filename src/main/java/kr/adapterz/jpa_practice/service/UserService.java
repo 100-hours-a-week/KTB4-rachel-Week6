@@ -3,6 +3,8 @@ package kr.adapterz.jpa_practice.service;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
+import kr.adapterz.jpa_practice.jwt.JwtTokenProvider;
+import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.dto.user.*;
 import kr.adapterz.jpa_practice.entity.User;
 import kr.adapterz.jpa_practice.exception.DuplicateException;
@@ -21,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
+    private final JwtTokenProvider jwtTokenProvider; // 여기 접근제어자 뭐야
 
 
     @Transactional
@@ -115,7 +118,7 @@ public class UserService {
     }
 
 
-    public UserResponseDto login(LoginRequestDto request) {
+    public TokenResponseDto login(LoginRequestDto request) {
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
@@ -123,7 +126,24 @@ public class UserService {
         if (!user.getPassword().equals(request.getPassword())) {
             throw new PasswordMismatchException("PASSWORD_MISMATCH");
         }
-        return new UserResponseDto(user);
-    }
+
+        // 인증 성공 후 시큐리티 인증 정보 생성
+        org.springframework.security.core.Authentication authentication =
+                new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                        user.getEmail(), // UsernamePasswordAuthenticationToken이 뭐길래 이메일을 보내? 아님 가져오는건가
+                        null, // 원래는 무슨자리인데 왜 null을 보내
+                        org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_USER")
+                );
+
+        // 토큰 발행
+        String accessToken = jwtTokenProvider.createToken(user.getEmail());
+
+        return TokenResponseDto.builder() // 그럼 로그인할때마다 새로운 객체로 안만들어지는거야..?
+                    .grantType("Bearer")
+                    .accessToken(accessToken)
+                    .refreshToken("추후 구현 예정")
+                    .userInfo(new UserResponseDto(user)) // 유저 객체 쏙 대입
+                    .build();
+        }
 
 }

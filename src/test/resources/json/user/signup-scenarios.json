@@ -26,6 +26,14 @@
     "passwordCheck": "Password123!",
     "nickname": "테스터",
     "profileImage": "default.png"
+  },
+  "login_normal": {
+    "email": "test@example.com",
+    "password": "Password123!"
+  },
+  "login_wrong_password": {
+    "email": "test@example.com",
+    "password": "WrongPassword!!!"
   }
 
 }

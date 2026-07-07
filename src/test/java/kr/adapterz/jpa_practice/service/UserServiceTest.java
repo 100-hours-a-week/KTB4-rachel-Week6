@@ -1,6 +1,7 @@
 package kr.adapterz.jpa_practice.service;
 
 import kr.adapterz.jpa_practice.dto.user.UserRequestDto;
+import kr.adapterz.jpa_practice.dto.user.UserResponseDto;
 import kr.adapterz.jpa_practice.exception.PasswordMismatchException;
 import kr.adapterz.jpa_practice.exception.DuplicateException;
 import kr.adapterz.jpa_practice.repository.UserRepository;
@@ -131,13 +132,40 @@ class UserServiceTest {
 
 
     @Test
-    @DisplayName("로그인 로직 테스트")
-    @Disabled
-    void login() {
+    @DisplayName("로그인 로직 테스트 성공")
+    void login_success() throws IOException {
+        // given
+        UserRequestDto loginDto = getDtoByScenario("login_normal");
 
+        User mockUser = mock(User.class);
+        when(mockUser.getPassword()).thenReturn("Password123!"); // 실제 비밀번호
+        when(mockUser.getEmail()).thenReturn("test@example.com");
+        when(mockUser.getNickname()).thenReturn("테스터");
+
+        when(userRepository.findByEmail(loginDto.getEmail())).thenReturn(Optional.of(mockUser));
+
+        // when
+        UserResponseDto response = userService.login(loginDto);
+        // then
+        assertNotNull(response);
+        verify(userRepository).findByEmail(loginDto.getEmail());
+    }
+
+    @Test
+    @DisplayName("로그인 로직 테스트(비밀번호 불일치 예외)")
+    @Disabled
+    void login_wrong_password() throws IOException {
 
 
     }
+
+    @Test
+    @DisplayName("로그인 로직 테스트 - 가입되지 않은 이메일인 경우")
+    @Disabled
+    void login_user_not_found() throws IOException {
+
+    }
+
 
     @Test
     @DisplayName("회원조회 로직 테스트")
