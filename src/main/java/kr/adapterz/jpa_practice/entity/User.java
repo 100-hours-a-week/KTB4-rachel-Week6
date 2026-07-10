@@ -34,6 +34,9 @@ public class User {
     @Column(name = "profile_image", length = 255)
     private String profileImage;
 
+    @Enumerated(EnumType.STRING)
+    private UserRole userRole;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -63,11 +66,12 @@ public class User {
         updatedAt = LocalDateTime.now();
     }
 
-    public User(String email, String password, String nickname, String profileImage) {
+    public User(String email, String password, String nickname, String profileImage, UserRole userRole) {
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.profileImage = profileImage;
+        this.userRole = userRole;
 
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();

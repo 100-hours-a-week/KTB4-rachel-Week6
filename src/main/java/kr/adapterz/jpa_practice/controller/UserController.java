@@ -1,14 +1,20 @@
 package kr.adapterz.jpa_practice.controller;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import kr.adapterz.jpa_practice.dto.user.*;
 import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.response.ApiResponse;
 import kr.adapterz.jpa_practice.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 
 // @CrossOrigin(origins = "http://127.0.0.1:5500")
@@ -32,12 +38,28 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<ApiResponse<UserResponseDto>> login (
-            @Valid @RequestBody LoginRequestDto request
+            @Valid @RequestBody LoginRequestDto request,
+            HttpServletResponse response
     ) {
         TokenResponseDto tokenResult = userService.login(request);
+
+
+        // 쿠키 설정하기
+        ResponseCookie cookie = ResponseCookie.from("ktb_commuity_jwt_token", tokenResult.getAccessToken())
+                .httpOnly(true) // 스프링시큐리티는 csrf token에 대한 httpONly 설정이고, 이거는 jwt token에 대한 httpOnly 설정
+                .secure(true) // 보안 프로토콜(https) 환경에서만 쿠키가 서버로 전송하도록 함 // 실제 배포 시에는 true로 해야한다
+                .sameSite("None")
+                .path("/") // 모든 경로에 쿠키를 사용할 수 있게
+                .maxAge(60 * 60 * 24) // 쿠키 유효 기간: 1일
+                .build();
+
+
+        // response에 쿠키 헤더 추가
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .header("Authorization", tokenResult.getGrantType() + " " + tokenResult.getAccessToken())
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(ApiResponse.of("LOGIN_SUCCESS", tokenResult.getUserInfo(), null));
     }
 
@@ -45,6 +67,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateNicknameProfileImg(
             @PathVariable Long userId,
             @Valid @RequestBody UserUpdateRequestDto request
+
     ) {
         UserUpdateResponseDto result = userService.updateUserInfo(userId, request);
         return ResponseEntity

@@ -23,10 +23,10 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Spring Security의 UserDetails 객체로 변환
         return org.springframework.security.core.userdetails.User
-                .builder() // 심볼 'builder'을(를) 해결할 수 없습니다
+                .builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .authorities("ROLE_USER")
+                .roles(user.getUserRole().name())
                 .build();
 
 

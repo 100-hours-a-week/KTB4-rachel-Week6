@@ -42,17 +42,17 @@ public class JwtTokenProvider {
         Date expire = new Date(now.getTime() + ACCESS_TOKEN_TIME);
 
         return Jwts.builder() // Builder 객체 생성
-                .subject(email) //
+                .subject(email)
                 .issuedAt(now)
                 .expiration(expire)
                 .signWith(secretKey)
                 .compact();
     }
 
-    // 토큰에서 이메일 추출
+    // 토큰에서 이메일 추출(토큰의 Header, Payload, Signature 중에서 Payload에서 이메일 추출)
     public String getEmail(String token) {
         return Jwts.parser()
-                .verifyWith(secretKey) // 여기 빨간색
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
@@ -62,7 +62,7 @@ public class JwtTokenProvider {
     // 토큰 검증
     public boolean validateToken(String token) {
         Jwts.parser()
-                .verifyWith(secretKey) // 여기 빨간색
+                .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token);
 
@@ -82,15 +82,15 @@ public class JwtTokenProvider {
     }
 
     // Bearer 제거: Authorization 헤더에서 JWT 추출
-    public String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader("Authorization");
-
-        if (bearerToken != null &&
-                bearerToken.startsWith("Bearer ")) {
-
-            return bearerToken.substring(7);
-        }
-
-        return null;
-    }
+//    public String resolveToken(HttpServletRequest request) {
+//        String bearerToken = request.getHeader("Authorization");
+//
+//        if (bearerToken != null &&
+//                bearerToken.startsWith("Bearer ")) {
+//
+//            return bearerToken.substring(7);
+//        }
+//
+//        return null;
+//    }
 }

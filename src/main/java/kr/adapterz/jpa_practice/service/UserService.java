@@ -1,8 +1,10 @@
 package kr.adapterz.jpa_practice.service;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
+import kr.adapterz.jpa_practice.entity.UserRole;
 import kr.adapterz.jpa_practice.jwt.JwtTokenProvider;
 import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.dto.user.*;
@@ -12,6 +14,8 @@ import kr.adapterz.jpa_practice.exception.NotFoundException;
 import kr.adapterz.jpa_practice.exception.PasswordMismatchException;
 import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,8 +53,11 @@ public class UserService {
                 request.getEmail(),
                 request.getPassword(),
                 request.getNickname(),
-                request.getProfileImage()
+                request.getProfileImage(),
+                null
         );
+
+        user.setUserRole(UserRole.USER);
 
         User savedUser = userRepository.save(user); // userResponsitory가 인터페이스, User타입으로 구현체
         return new UserResponseDto(savedUser);
@@ -130,19 +137,19 @@ public class UserService {
         // 인증 성공 후 시큐리티 인증 정보 생성
         org.springframework.security.core.Authentication authentication =
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                        user.getEmail(), // UsernamePasswordAuthenticationToken이 뭐길래 이메일을 보내? 아님 가져오는건가
+                        user.getEmail(),
                         null, // 원래는 무슨자리인데 왜 null을 보내
-                        org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_USER")
+                        org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_USER") // 시큐리티 권한 목록에 넣을때 ROLE_USER로 넣어줘야 한다 //enum으로 USER로 저장하긴했는데, autorities가 아니라 role로 저장
                 );
 
         // 토큰 발행
         String accessToken = jwtTokenProvider.createToken(user.getEmail());
 
-        return TokenResponseDto.builder() // 그럼 로그인할때마다 새로운 객체로 안만들어지는거야..?
+        return TokenResponseDto.builder()
                     .grantType("Bearer")
                     .accessToken(accessToken)
                     .refreshToken("추후 구현 예정")
-                    .userInfo(new UserResponseDto(user)) // 유저 객체 쏙 대입
+                    .userInfo(new UserResponseDto(user))
                     .build();
         }
 
