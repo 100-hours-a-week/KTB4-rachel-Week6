@@ -43,8 +43,9 @@ public class SecurityConfig {
                 // 4. 권한 설정
                 // 나의 서비스에 들어오는 HTTP 요청(URL 주소)별로 어떤 권한을 가진 유저만 통과시킬지 규칙을 정하는 곳
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/users/signup", "/users/login", "/error").permitAll()
-                        .requestMatchers("/users/**", "/posts/**").hasRole("USER")
+                        // .requestMatchers("/users/**", "/posts/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 

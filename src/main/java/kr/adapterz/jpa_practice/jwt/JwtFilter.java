@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 import kr.adapterz.jpa_practice.jwt.JwtTokenProvider;
+import kr.adapterz.jpa_practice.jwt.JwtCookieConstants;
 
 import java.io.IOException;
 
@@ -30,10 +31,15 @@ public class JwtFilter extends OncePerRequestFilter {
         String token = resolveToken(request);
 
         // 토큰 유효성 검사
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            // 토큰이 유효하면 Authentication 객체를 가져와서 SecurityContext에 저장
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (StringUtils.hasText(token)
+                && jwtTokenProvider.validateToken(token)) {
+
+            Authentication authentication =
+                    jwtTokenProvider.getAuthentication(token);
+
+            SecurityContextHolder
+                    .getContext()
+                    .setAuthentication(authentication);
         }
 
         // 다음 필터로 진행
@@ -52,15 +58,18 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private String resolveToken(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("accessToken")) {
-                    return cookie.getValue();
-                }
 
-            }
-
+        if(cookies == null){
+            return null;
         }
+
+        for(Cookie cookie : cookies) {
+            if (JwtCookieConstants.ACCESS_TOKEN_COOKIE_NAME.equals(cookie.getName()) // 여기를 이어줘야해 어케불러오지?
+                && StringUtils.hasText(cookie.getValue())) {
+                return cookie.getValue();
+            }
+        }
+
         return null;
 
     }

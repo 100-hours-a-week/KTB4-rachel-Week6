@@ -9,9 +9,11 @@ import java.time.LocalDateTime;
 public class CommentCreateResponseDto {
     private final Long commentId;
     private final LocalDateTime createdAt;
+    private final String nickname;
 
     public CommentCreateResponseDto(Comment comment) {
         this.commentId = comment.getCommentId();
         this.createdAt = comment.getCreatedAt();
+        this.nickname = comment.getAuthor().getNickname();
     }
 }

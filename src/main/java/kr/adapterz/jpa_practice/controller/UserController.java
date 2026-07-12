@@ -12,9 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
+import kr.adapterz.jpa_practice.jwt.JwtCookieConstants;
 
 
 // @CrossOrigin(origins = "http://127.0.0.1:5500")
@@ -45,12 +43,12 @@ public class UserController {
 
 
         // 쿠키 설정하기
-        ResponseCookie cookie = ResponseCookie.from("ktb_commuity_jwt_token", tokenResult.getAccessToken())
+        ResponseCookie cookie = ResponseCookie.from(JwtCookieConstants.ACCESS_TOKEN_COOKIE_NAME, tokenResult.getAccessToken())
                 .httpOnly(true) // 스프링시큐리티는 csrf token에 대한 httpONly 설정이고, 이거는 jwt token에 대한 httpOnly 설정
-                .secure(true) // 보안 프로토콜(https) 환경에서만 쿠키가 서버로 전송하도록 함 // 실제 배포 시에는 true로 해야한다
-                .sameSite("None")
-                .path("/") // 모든 경로에 쿠키를 사용할 수 있게
-                .maxAge(60 * 60 * 24) // 쿠키 유효 기간: 1일
+                .secure(false) // 로컬 HTTP 개발환경
+                .sameSite("Lax") // localhost:5500 → localhost:8080
+                .path("/")
+                .maxAge(60 * 30) // JWT 유효기간과 동일하게 30분
                 .build();
 
 
@@ -83,7 +81,7 @@ public class UserController {
         UserResponseDto result = userService.updatePassword(userId, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.of("NICKNAME_UPDATED", result));
+                .body(ApiResponse.of("PASSWORD_UPDATED", result));
     }
 
     @GetMapping("/{userId}")

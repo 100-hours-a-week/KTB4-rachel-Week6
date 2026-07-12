@@ -43,7 +43,7 @@ public class PostController {
                 .body(ApiResponse.of("POST_RETRIEVED",result, null));
     }
 
-    // TODO: post DTO 다시 만들어야 함.
+
     @PostMapping("/users/{userId}")
     public ResponseEntity<ApiResponse<PostResponseDto>> createPost(
             @PathVariable Long userId,

@@ -54,12 +54,12 @@ public class UserService {
                 request.getPassword(),
                 request.getNickname(),
                 request.getProfileImage(),
-                null
+                null // 아내가 일부러 null로 넣었어 아래에 set해줬거든 대신
         );
 
         user.setUserRole(UserRole.USER);
 
-        User savedUser = userRepository.save(user); // userResponsitory가 인터페이스, User타입으로 구현체
+        User savedUser = userRepository.save(user);
         return new UserResponseDto(savedUser);
     }
 
@@ -138,7 +138,7 @@ public class UserService {
         org.springframework.security.core.Authentication authentication =
                 new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
                         user.getEmail(),
-                        null, // 원래는 무슨자리인데 왜 null을 보내
+                        null,
                         org.springframework.security.core.authority.AuthorityUtils.createAuthorityList("ROLE_USER") // 시큐리티 권한 목록에 넣을때 ROLE_USER로 넣어줘야 한다 //enum으로 USER로 저장하긴했는데, autorities가 아니라 role로 저장
                 );
 

@@ -21,12 +21,15 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new UsernameNotFoundException("이메일로 사용자를 찾을 수 없습니다: " + username));
 
+        // drop 후 지우기
+        String roleName = (user.getUserRole() != null) ? user.getUserRole().name() : "USER";
+
         // Spring Security의 UserDetails 객체로 변환
         return org.springframework.security.core.userdetails.User
                 .builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
-                .roles(user.getUserRole().name())
+                .roles(roleName) // nullpointexceoption
                 .build();
 
 

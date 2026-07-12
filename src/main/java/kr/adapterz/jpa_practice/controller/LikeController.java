@@ -20,12 +20,14 @@ public class LikeController {
     private final LikeService likeService;
 
     @GetMapping("/likes")
-    public ResponseEntity<ApiResponse<GetLikeInfoResponseDto>> getLikes(
+    public ResponseEntity<ApiResponse<GetLikeInfoResponseDto>> getLikes( // 특정 게시글에 대하여 좋아요 개수 조회
             @PathVariable Long postId
     ) {
         GetLikeInfoResponseDto result = likeService.getLikeInfo(postId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.of("LIKE_RETRIVER", result, null));
     }
+
+
 
     @PostMapping("/{userId}/likes")
     public ResponseEntity<ApiResponse<LikeResponseDto>> createLike(
@@ -40,10 +42,9 @@ public class LikeController {
     @DeleteMapping("/{userId}/likes")
     public ResponseEntity<ApiResponse<LikeResponseDto>> deleteLike(
             @PathVariable Long postId,
-            @PathVariable Long userId,
-            @RequestBody LikeRequestDto request
+            @PathVariable Long userId
     ) {
-        LikeResponseDto result = likeService.cancelLike(postId, userId, request);
+        LikeResponseDto result = likeService.cancelLike(postId, userId);
         return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.of("LIKE_DELETE", result, null));
     }
 }

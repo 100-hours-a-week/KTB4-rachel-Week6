@@ -15,7 +15,7 @@ public class GetLikeInfoResponseDto {
 
 
     public GetLikeInfoResponseDto(Post post) {
-        this.likeNum = post.getPostInfo().getLikeCount();
+        this.likeNum = post.getPostInfo().getLikeCount(); // 좋아요 개수
         this.postId = post.getPostId();
     }
 
