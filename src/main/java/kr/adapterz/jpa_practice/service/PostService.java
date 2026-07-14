@@ -87,12 +87,6 @@ public class PostService {
         if (request.getTitle() != null) post.changeTitle(request.getTitle());
         if (request.getContent() != null) post.changeContent(request.getContent());
 
-//        if(!request.getImages().isEmpty()) // 특정 원하는 이미지만 어떻게 수정해여하지
-//        {
-//
-//        }
-
-
 
         return new PostUpdateResponseDto(post);
     }
