@@ -35,21 +35,19 @@ public class SecurityConfig {
                 .formLogin(form -> form.disable())
                 .httpBasic(basic -> basic.disable())
 
-                // 3. 세션 설정: STATELESS (가장 중요!)
+                // 세션 설정: STATELESS
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
 
-                // 4. 권한 설정
-                // 나의 서비스에 들어오는 HTTP 요청(URL 주소)별로 어떤 권한을 가진 유저만 통과시킬지 규칙을 정하는 곳
+                // 권한 설정
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/users/signup", "/users/login", "/error").permitAll()
-                        // .requestMatchers("/users/**", "/posts/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )
 
-                // 5. 필터 추가: UsernamePasswordAuthenticationFilter 앞에 JwtFilter 배치
+                // 필터 추가
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtExceptionFilter, JwtFilter.class);
 

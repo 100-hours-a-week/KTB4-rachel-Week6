@@ -5,6 +5,7 @@ import kr.adapterz.jpa_practice.entity.Comment;
 import kr.adapterz.jpa_practice.entity.Post;
 import kr.adapterz.jpa_practice.entity.User;
 import kr.adapterz.jpa_practice.exception.NotFoundException;
+import kr.adapterz.jpa_practice.exception.AccessDeniedException;
 import kr.adapterz.jpa_practice.repository.CommentRepository;
 import kr.adapterz.jpa_practice.repository.PostRepository;
 import kr.adapterz.jpa_practice.repository.UserRepository;
@@ -41,13 +42,10 @@ public class CommentService {
         return new CommentCreateResponseDto(savedComment);
     }
 
-
-    // getAllComment
-    @Transactional
     public CommentListResponseDto getAllComment(Long postId) {
 
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUNT"));
+                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
 
         List<Comment> comments = post.getComments();
 
@@ -59,22 +57,17 @@ public class CommentService {
         return new CommentListResponseDto(dtoList, postId);
     }
 
-
-    // updateComment
     @Transactional
-    public CommentUpdateResponseDto updateComment(Long postId, Long commentId, CommentRequestDto request) {
+    public CommentUpdateResponseDto updateComment(Long postId, Long commentId, CustomUserDetails userDetails, CommentRequestDto request) {
 
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
-
         // 본인이 작성한 댓글만 업데이트 가능
-        if (!comment.getAuthor().getUserId().equals(request.getUserId())) {
-            throw new IllegalArgumentException("NOT_AUTHORIZED_COMMENT_OWNER");
+        if (!comment.getAuthor().getUserId().equals(userDetails.getUserId())) {
+            throw new AccessDeniedException("USER_MISMATCH");
         }
 
-
-        // null 값 확인하고 업데이트 - 근데 if문 true일때만 업데이트 되는데 이럼?
         if(request.getCommentContent() != null)
         {
             comment.checkAndUpdateNickname();
@@ -84,22 +77,20 @@ public class CommentService {
         return new CommentUpdateResponseDto(comment);
     }
 
+    @Transactional
+    public CommentDeleteResponseDto deleteComment(Long postId, Long commentId, CustomUserDetails userDetails) {
 
-    //deleteComment
-    public CommentDeleteResponseDto deleteComment(Long postId, Long commentId, CommentDeleteReqeustDto request) {
-
-        // 글이 있는지 확인
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
         // 본인이 생성한 댓글만 삭제할 수 있음
-        if (!comment.getAuthor().getUserId().equals(request.getUserId()))
+        if (!comment.getAuthor().getUserId().equals(userDetails.getUserId()))
         {
-            throw new IllegalArgumentException("NOT_AUTHORIZED_COMMENT_OWNER");
+            throw new AccessDeniedException("USER_MISMATCH");
         }
 
         commentRepository.delete(comment);
 
-        return new CommentDeleteResponseDto(comment); // 삭제했는데 dto 객체로 보내져?
+        return new CommentDeleteResponseDto(comment);
     }
 }

@@ -44,7 +44,7 @@ public class PostResponseDto {
 
         this.likeCount = (post.getPostInfo() != null) ? post.getPostInfo().getLikeCount() : 0;
         this.commentCount = (post.getPostInfo() != null) ? post.getPostInfo().getCommentCount() : 0;
-        this.viewCount = 0;
+        this.viewCount = (post.getPostInfo() != null) ? post.getPostInfo().getViewCount() : 0;
 
         this.createdAt = post.getCreatedAt();
 

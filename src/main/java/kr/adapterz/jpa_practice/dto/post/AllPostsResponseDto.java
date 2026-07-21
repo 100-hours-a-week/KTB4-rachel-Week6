@@ -36,8 +36,7 @@ public class AllPostsResponseDto {
 
         this.likeCount = (post.getPostInfo() != null) ? post.getPostInfo().getLikeCount() : 0;
         this.commentCount = (post.getPostInfo() != null) ? post.getPostInfo().getCommentCount() : 0;
-        //TODO: 조회수
-        this.viewCount = 0;
+        this.viewCount = (post.getPostInfo() != null) ? post.getPostInfo().getViewCount() : 0;
 
         this.createdAt = post.getCreatedAt();
 

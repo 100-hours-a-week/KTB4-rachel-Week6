@@ -77,9 +77,9 @@ public class Post {
     public void LinkPostInfo(PostInfo postInfo) {
         this.postInfo = postInfo;
 
-        // 만약 서로 연관되어 있지 않다면
+        // 만약 서로 연관되어 있지 않다면 연관관계 매핑
         if (postInfo.getPost() != this) {
-            postInfo.setPost(this); // 둘을 연관지어라.
+            postInfo.setPost(this);
         }
     }
 

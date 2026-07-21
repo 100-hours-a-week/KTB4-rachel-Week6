@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 
 import kr.adapterz.jpa_practice.entity.UserRole;
+import kr.adapterz.jpa_practice.exception.AccessDeniedException;
 import kr.adapterz.jpa_practice.jwt.JwtTokenProvider;
 import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.dto.user.*;
@@ -16,6 +17,7 @@ import kr.adapterz.jpa_practice.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
     private final UserRepository userRepository;
     private final JwtTokenProvider jwtTokenProvider; // 여기 접근제어자 뭐야
+
 
 
     @Transactional
@@ -45,7 +48,7 @@ public class UserService {
 
         // 닉네임 중복 검사
         if(userRepository.findByNickname(request.getNickname()).isPresent()) {
-            throw new DuplicateException("NickName_ALREADY_EXISTS");
+            throw new DuplicateException("NiCKNAME_ALREADY_EXISTS");
         }
 
 
@@ -63,6 +66,14 @@ public class UserService {
         return new UserResponseDto(savedUser);
     }
 
+    public CurrentUserResponseDto getCurrentUser(CustomUserDetails userDetails) {
+        Long loginUserId = userDetails.getUserId();
+
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(() -> new UsernameNotFoundException("USER_NOT_FOUND: ID " + loginUserId));
+
+        return new CurrentUserResponseDto(user);
+    }
 
     public UserAllResponseDto getUser(Long userId) {
         User user = userRepository.findById(userId)
@@ -74,15 +85,21 @@ public class UserService {
     @Transactional
     public UserUpdateResponseDto updateUserInfo(
             @Positive Long userId, // @Positive는 userId가 0보다 큰 값인지를 검증
+            CustomUserDetails userDetails,
             @Valid UserUpdateRequestDto request
     ) {
+
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new AccessDeniedException("USER_MISMATCH");
+        }
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 
-        // 중복 이메일 방지
+        // 중복 닉네임 방지
         userRepository.findByNickname(request.getNickname())
                 .ifPresent(existingUser -> {
-                    throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");
+                    throw new IllegalArgumentException("NiCKNAME_ALREADY_EXISTS");
                 });
 
         user.changeProfileImage(request.getProfileImage());
@@ -98,8 +115,13 @@ public class UserService {
     @Transactional
     public UserResponseDto updatePassword(
             @Positive Long userId,
+            CustomUserDetails userDetails,
             @Valid PasswordUpdateRequestDto request
             ) {
+
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new AccessDeniedException("USER_MISMATCH");
+        }
 
         if (!request.getPassword().equals(request.getPasswordCheck())) {
             throw new PasswordMismatchException("PASSWORD_MISMATCH");
@@ -114,8 +136,15 @@ public class UserService {
 
 
     @Transactional
-    public UserResponseDto deleteUser(Long userId) {
-        // 수정사항: 삭제하기 전에 먼저 user 조회 해야 한다.
+    public UserResponseDto deleteUser(
+            @Positive Long userId,
+            CustomUserDetails userDetails
+    ) {
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new AccessDeniedException("USER_MISMATCH");
+        }
+
+        // 삭제하기 전에 먼저 user 조회
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 

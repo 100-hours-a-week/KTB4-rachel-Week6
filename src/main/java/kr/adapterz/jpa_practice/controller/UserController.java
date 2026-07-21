@@ -5,12 +5,14 @@ import jakarta.validation.Valid;
 import kr.adapterz.jpa_practice.dto.user.*;
 import kr.adapterz.jpa_practice.dto.auth.TokenResponseDto;
 import kr.adapterz.jpa_practice.response.ApiResponse;
+import kr.adapterz.jpa_practice.service.CustomUserDetails;
 import kr.adapterz.jpa_practice.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import kr.adapterz.jpa_practice.jwt.JwtCookieConstants;
 
@@ -22,6 +24,26 @@ import kr.adapterz.jpa_practice.jwt.JwtCookieConstants;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<CurrentUserResponseDto>> getCurrentUser(
+            @AuthenticationPrincipal CustomUserDetails userDetails // 이거는 컨트롤러 계층에서만?
+    ){
+        CurrentUserResponseDto result = userService.getCurrentUser(userDetails);
+        return ResponseEntity.ok(
+                ApiResponse.of("USER_AUTH", result)
+        );
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<ApiResponse<UserAllResponseDto>> getUser(
+            @PathVariable Long userId
+    ) {
+        UserAllResponseDto result = userService.getUser(userId);
+        return ResponseEntity.ok(
+                ApiResponse.of("USER_RETRIEVED", result)
+        );
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<ApiResponse<UserResponseDto>> createUser (
@@ -48,7 +70,7 @@ public class UserController {
                 .secure(false) // 로컬 HTTP 개발환경
                 .sameSite("Lax") // localhost:5500 → localhost:8080
                 .path("/")
-                .maxAge(60 * 30) // JWT 유효기간과 동일하게 30분
+                .maxAge(60 * 30) // JWT 유효기간과 동일하게
                 .build();
 
 
@@ -64,10 +86,11 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserUpdateResponseDto>> updateNicknameProfileImg(
             @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody UserUpdateRequestDto request
 
     ) {
-        UserUpdateResponseDto result = userService.updateUserInfo(userId, request);
+        UserUpdateResponseDto result = userService.updateUserInfo(userId, userDetails, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of("NICKNAME_IMAGE_UPDATED", result,null));
@@ -76,30 +99,22 @@ public class UserController {
     @PutMapping("/{userId}/password")
     public ResponseEntity<ApiResponse<UserResponseDto>> updatePassword(
             @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody PasswordUpdateRequestDto request
     ) {
-        UserResponseDto result = userService.updatePassword(userId, request);
+        UserResponseDto result = userService.updatePassword(userId, userDetails, request);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of("PASSWORD_UPDATED", result));
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<UserAllResponseDto>> getUser(
-            @PathVariable Long userId
-    ) {
-        UserAllResponseDto result = userService.getUser(userId);
-        return ResponseEntity.ok(
-                ApiResponse.of("USER_RETRIEVED", result)
-        );
-    }
-
 
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse<UserResponseDto>> deleteUser(
-            @PathVariable Long userId
+            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        UserResponseDto result = userService.deleteUser(userId);
+        UserResponseDto result = userService.deleteUser(userId, userDetails);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.of("USER_DELETED", result));
