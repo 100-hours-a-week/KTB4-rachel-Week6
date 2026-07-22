@@ -71,17 +71,13 @@ public class Post {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
 
-        this.LinkPostInfo(new PostInfo(this)); // 프록시로 만들어질거라 따로 생성자에 넣을 필요없음. 데이터를 데이터베이스에 처음 저장(Insert)할 때는 개발자가 직접 객체를 생성해서 관계를 맺어주어야 합니다
     }
 
-    public void LinkPostInfo(PostInfo postInfo) {
-        this.postInfo = postInfo;
+    public List<Comment> getComments() {return comments; }
 
-        // 만약 서로 연관되어 있지 않다면 연관관계 매핑
-        if (postInfo.getPost() != this) {
-            postInfo.setPost(this);
-        }
-    }
+    public List<Like> getLikes() {return likes;}
+
+    public void linkPostInfo(PostInfo postInfo) { this.postInfo = postInfo; }
 
     public void changeTitle(String title) {
         this.title = title;
@@ -96,7 +92,7 @@ public class Post {
         postImages.add(image);
     }
 
-    // 닉네임 동기화 메소드
+
     public void checkAndUpdateNickname(){
         if(!this.nickname.equals(this.author.getNickname())) // 확인했는데 원래 저장했던 닉네임이랑 현재 User 엔티티가 가진 닉네임이랑 다르면 업데이트해라
         {

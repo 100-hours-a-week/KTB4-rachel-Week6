@@ -40,6 +40,8 @@ public class PostService {
                 author
         );
 
+        PostInfo postInfo = new PostInfo(post);
+
         // 게시글에 이미지를 첨부하였을 경우
         if(!request.getImages().isEmpty()) {
             for (String url: request.getImages())
@@ -70,11 +72,11 @@ public class PostService {
         return posts.stream()
                 .peek(post -> {
                     post.checkAndUpdateNickname();
-                    System.out.println("postInfo 값: " + post.getPostInfo());
-                    if(post.getPostInfo() == null) {
-                        PostInfo info = new PostInfo(post);
-                        post.LinkPostInfo(info);
-                    }
+//                    System.out.println("postInfo 값: " + post.getPostInfo());
+//                    if(post.getPostInfo() == null) {
+//                        PostInfo info = new PostInfo(post);
+//                        post.LinkPostInfo(info);
+//                    }
                 })
                 .map(post -> new AllPostsResponseDto(post))
                 .collect(Collectors.toList());

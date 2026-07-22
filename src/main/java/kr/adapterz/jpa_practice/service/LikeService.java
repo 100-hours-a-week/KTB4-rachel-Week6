@@ -30,7 +30,7 @@ public class LikeService {
     public LikeResponseDto pressLike(Long postId, Long userId, CustomUserDetails userDetails, LikeRequestDto request) {
 
         if (!userDetails.getUserId().equals(userId)) {
-            throw new AccessDeniedException("USER_MISMATCH");
+            throw new AccessDeniedException("AUTH_DENIED");
         }
 
         Post post = postRepository.findById(postId)
@@ -43,13 +43,15 @@ public class LikeService {
             LikeId likeId = new LikeId(postId, userId);
 
             likeRepository.findById(likeId).ifPresent(like -> {
-                throw new NotFoundException("ALREADY_PRESSED_LIKE");
+                throw new NotFoundException("LIKE_ALREADY_PRESSED");
             });
         }
 
         Like like = new Like(true, user, post);
-        likeRepository.save(like);
+
         post.getPostInfo().increaseLikeCount();
+        like.changePost(post); // 연관관계매핑 아니 취소 생성 할때마다 연관관계 매핑해주는건가?
+        likeRepository.save(like);
 
         return new LikeResponseDto(true, post);
     }
@@ -57,7 +59,7 @@ public class LikeService {
     public LikeResponseDto cancelLike(Long postId, Long userId, CustomUserDetails userDetails) {
 
         if (!userDetails.getUserId().equals(userId)) {
-            throw new AccessDeniedException("USER_MISMATCH");
+            throw new AccessDeniedException("AUTH_DENIED");
         }
 
         Post post = postRepository.findById(postId)
@@ -68,10 +70,11 @@ public class LikeService {
 
         LikeId likeId = new LikeId(postId, userId);
 
-        likeRepository.findById(likeId).ifPresent(like -> {
-            likeRepository.delete(like);
-            post.getPostInfo().decreaseLikeCount();
-        });
+        Like like = likeRepository.findById(likeId)
+                        .orElseThrow(() -> new NotFoundException("LIKE_NEVER_PRESSED"));
+
+        post.getPostInfo().decreaseLikeCount();
+        likeRepository.delete(like);
 
         return new LikeResponseDto(false, post);
     }

@@ -38,6 +38,8 @@ public class CommentService {
                 post
         );
 
+        comment.changePost(post); // 연관관계 매핑
+        post.getPostInfo().increaseCommentCount();
         Comment savedComment = commentRepository.save(comment);
         return new CommentCreateResponseDto(savedComment);
     }
@@ -63,7 +65,6 @@ public class CommentService {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
-        // 본인이 작성한 댓글만 업데이트 가능
         if (!comment.getAuthor().getUserId().equals(userDetails.getUserId())) {
             throw new AccessDeniedException("USER_MISMATCH");
         }
@@ -80,6 +81,9 @@ public class CommentService {
     @Transactional
     public CommentDeleteResponseDto deleteComment(Long postId, Long commentId, CustomUserDetails userDetails) {
 
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
+
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException("COMMENT_NOT_FOUND"));
 
@@ -89,6 +93,7 @@ public class CommentService {
             throw new AccessDeniedException("USER_MISMATCH");
         }
 
+        post.getPostInfo().decreaseCommentCount();
         commentRepository.delete(comment);
 
         return new CommentDeleteResponseDto(comment);

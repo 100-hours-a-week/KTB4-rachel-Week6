@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter; // TODO: Setter는 직접적으로 사용하지말고 불러올땐 메소드에 의도가 보이도록 합시다.
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 
 @Entity
@@ -52,6 +53,14 @@ public class Comment {
 
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public void changePost(Post post) {
+        this.post = post;
+
+        if(post !=null) {
+            post.getComments().add(this);
+        }
     }
 
     public void changeContent(String commentContent) {

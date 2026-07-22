@@ -40,4 +40,11 @@ public class Like {
         this.likeId = new LikeId();
     }
 
+    public void changePost(Post post) {
+        this.post = post;
+
+        if(post != null) {
+            post.getLikes().add(this);
+        }
+    }
 }
