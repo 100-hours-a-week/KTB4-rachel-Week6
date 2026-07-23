@@ -38,7 +38,7 @@ public class CommentService {
                 post
         );
 
-        comment.changePost(post); // 연관관계 매핑
+        comment.setPost(post); // 연관관계 매핑
         post.getPostInfo().increaseCommentCount();
         Comment savedComment = commentRepository.save(comment);
         return new CommentCreateResponseDto(savedComment);
@@ -93,6 +93,7 @@ public class CommentService {
             throw new AccessDeniedException("USER_MISMATCH");
         }
 
+        comment.disconnectPost(post);
         post.getPostInfo().decreaseCommentCount();
         commentRepository.delete(comment);
 

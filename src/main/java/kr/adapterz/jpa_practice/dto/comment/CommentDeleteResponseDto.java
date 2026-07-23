@@ -11,17 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CommentDeleteResponseDto {
     private Long commentId;
-    private Long postId;
-    private Long userId;
-    private int commentNum;
-
-    private PostInfo postInfo;
+    // private Long postId;
+    // private Long userId;
 
 
     public CommentDeleteResponseDto(Comment comment) {
         this.commentId = comment.getCommentId();
-        this.postId = comment.getPost().getPostId();
-        this.userId = comment.getAuthor().getUserId();
-        this.commentNum = postInfo.getCommentCount();
+        // this.postId = comment.getPost().getPostId(); //TODO: 소프트삭제 안하면 NPE
+        // this.userId = comment.getAuthor().getUserId();
     }
 }

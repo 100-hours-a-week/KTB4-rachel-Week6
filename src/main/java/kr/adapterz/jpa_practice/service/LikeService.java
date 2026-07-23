@@ -29,15 +29,15 @@ public class LikeService {
 
     public LikeResponseDto pressLike(Long postId, Long userId, CustomUserDetails userDetails, LikeRequestDto request) {
 
-        if (!userDetails.getUserId().equals(userId)) {
-            throw new AccessDeniedException("AUTH_DENIED");
-        }
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
+
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new AccessDeniedException("AUTH_DENIED");
+        }
 
         if (request.isLike()) {
             LikeId likeId = new LikeId(postId, userId);
@@ -49,8 +49,8 @@ public class LikeService {
 
         Like like = new Like(true, user, post);
 
+        like.setPost(post);
         post.getPostInfo().increaseLikeCount();
-        like.changePost(post); // 연관관계매핑 아니 취소 생성 할때마다 연관관계 매핑해주는건가?
         likeRepository.save(like);
 
         return new LikeResponseDto(true, post);
@@ -58,21 +58,22 @@ public class LikeService {
 
     public LikeResponseDto cancelLike(Long postId, Long userId, CustomUserDetails userDetails) {
 
-        if (!userDetails.getUserId().equals(userId)) {
-            throw new AccessDeniedException("AUTH_DENIED");
-        }
-
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("POST_NOT_FOUND"));
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("USER_NOT_FOUND"));
 
+        if (!userDetails.getUserId().equals(userId)) {
+            throw new AccessDeniedException("AUTH_DENIED");
+        }
+
         LikeId likeId = new LikeId(postId, userId);
 
         Like like = likeRepository.findById(likeId)
                         .orElseThrow(() -> new NotFoundException("LIKE_NEVER_PRESSED"));
 
+        like.disconnectPost(post);
         post.getPostInfo().decreaseLikeCount();
         likeRepository.delete(like);
 

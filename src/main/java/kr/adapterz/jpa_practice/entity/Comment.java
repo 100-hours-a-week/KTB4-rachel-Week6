@@ -55,12 +55,21 @@ public class Comment {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void changePost(Post post) {
+    public void setPost(Post post) {
         this.post = post;
 
         if(post !=null) {
             post.getComments().add(this);
         }
+    }
+
+    public void disconnectPost(Post post) {
+
+        if(post != null) {
+            post.getComments().remove(this);
+            this.post = null;
+        }
+
     }
 
     public void changeContent(String commentContent) {

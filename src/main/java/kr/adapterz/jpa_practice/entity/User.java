@@ -46,14 +46,16 @@ public class User {
     @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
     private List<Comment> comments = new ArrayList<>();
 
-    @OneToOne(mappedBy = "author", fetch = FetchType.LAZY)
-    private Like like;
+    @OneToMany(mappedBy = "author", fetch = FetchType.LAZY)
+    private List<Like> likes = new ArrayList<>();
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt; // null 가능
+    private LocalDateTime deletedAt;
+
+    // private boolean isDeleted = false; // 기본값
 
     protected User() {}
 

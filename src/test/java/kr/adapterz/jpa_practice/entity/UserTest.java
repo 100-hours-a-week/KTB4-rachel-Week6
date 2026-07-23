@@ -29,7 +29,8 @@ class UserTest {
         User user2 = new User("leehyye@gmail.com",
                 "qweasd!@WW",
                 "효롤리",
-                "https://cute_dog/image.jpg");
+                "https://cute_dog/image.jpg",
+                UserRole.USER);
 
         entityManager.persist(user2);
 
@@ -53,7 +54,8 @@ class UserTest {
                 "Imageabcde@gmail.com",
                 "dhu@!3F",
                 "ariangrae",
-                "http://cuteSinger.png"
+                "http://cuteSinger.png",
+                UserRole.USER
         );
 
         entityManager.persist(user2);

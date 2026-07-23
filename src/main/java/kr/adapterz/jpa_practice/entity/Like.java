@@ -20,12 +20,12 @@ public class Like {
     @Column(nullable = false)
     private boolean isLike = false;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("userId") //LikeId에 선언한 필드 그대로 써야 함
     @JoinColumn(name = "user_id", nullable = false)
     private User author;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("postId")//LikeId에 선언한 필드 그대로 써야 함
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
@@ -40,11 +40,18 @@ public class Like {
         this.likeId = new LikeId();
     }
 
-    public void changePost(Post post) {
+    public void setPost(Post post) {
         this.post = post;
 
         if(post != null) {
             post.getLikes().add(this);
+        }
+    }
+
+    public void disconnectPost(Post post) {
+        if(post != null) {
+            post.getLikes().remove(this);
+            this.post = null;
         }
     }
 }

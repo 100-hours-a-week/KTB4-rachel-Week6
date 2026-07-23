@@ -24,7 +24,8 @@ class CommentTest {
         User user1 = new User("leehyye@gmail.com",
                 "qweasd!@WW",
                 "효롤리",
-                "https://cute_dog/image.jpg");
+                "https://cute_dog/image.jpg",
+                UserRole.USER);
 
         entityManager.persist(user1);
 

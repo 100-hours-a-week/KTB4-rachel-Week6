@@ -34,11 +34,27 @@ public class PostInfo {
     }
 
 
-    public void increaseCommentCount() { commentCount++; }
+    public void increaseCommentCount() {
+        if(this.commentCount > 0) {
+            commentCount++;
+        }
+    }
 
-    public void decreaseCommentCount() { commentCount--; }
+    public void decreaseCommentCount() {
+        if(this.commentCount > 0) {
+            commentCount--;
+        }
+    }
 
-    public void increaseLikeCount() { likeCount++; }
+    public void increaseLikeCount() {
+        if(this.likeCount > 0) {
+            likeCount ++;
+        }
+    }
 
-    public void decreaseLikeCount() {likeCount--;}
+    public void decreaseLikeCount() {
+        if(this.likeCount > 0) {
+            likeCount --;
+        }
+    }
 }
